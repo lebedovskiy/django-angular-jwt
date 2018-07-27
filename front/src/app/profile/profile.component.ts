@@ -2,12 +2,9 @@ import {Component, OnInit} from '@angular/core';
 import {User} from '../user';
 import {UserService} from '../user.service';
 import {Router} from "@angular/router";
-import {FormArray, FormBuilder, FormControl, FormGroup, Validators} from "@angular/forms";
+import {FormBuilder, FormGroup, Validators} from "@angular/forms";
 
 import {JwtHelperService} from '@auth0/angular-jwt';
-
-
-import {UploadService} from "../upload.service";
 
 
 @Component({
@@ -18,18 +15,16 @@ import {UploadService} from "../upload.service";
 export class ProfileComponent implements OnInit {
 
   currentUser: User;
-  public user: User;
   editProfileForm: FormGroup;
-  avatarForm: FormGroup;
   loading = false;
   submitted = false;
+  files: File;
 
   helper = new JwtHelperService();
 
   constructor(private userService: UserService,
               private formBuilder: FormBuilder,
               private router: Router,
-              private uploadService: UploadService,
   ) {
     this.currentUser = this.helper.decodeToken(localStorage.getItem('currentUser'));
   }
@@ -41,30 +36,36 @@ export class ProfileComponent implements OnInit {
       email: [this.currentUser.email,
         Validators.pattern("[a-zA-Z_0-9]+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}")
       ],
-      password: ['', [
+      password: [this.currentUser.password, [
         Validators.required,
         Validators.minLength(6)
       ]],
-      first_name: [''],
-      middle_name: [''],
-      last_name: [''],
-      phones: new FormArray([
-        new FormControl('+7',)
-      ]),
+      first_name: [this.currentUser.first_name],
+      middle_name: [this.currentUser.middle_name],
+      last_name: [this.currentUser.last_name],
+      phone: null,
+      avatar: [],
     });
-    this.avatarForm = this.formBuilder.group({
-      avatar: [''],
-    })
   }
 
   onSubmit() {
     this.submitted = true;
     this.loading = true;
     console.log(this.currentUser);
-    this.userService.update(this.currentUser.id, this.editProfileForm.value)
+    let final_data;
+    if (this.files) {
+      let file: File = this.files;
+      const formData = new FormData();
+      formData.append('avatar', file);
+      final_data = this.getFormData()
+    }
+    else {
+      final_data = this.getFormData();
+    }
+    this.userService.update(this.currentUser.id, final_data)
       .subscribe(
-        data => {
-          this.router.navigate(['/login']);
+        final_data => {
+          this.router.navigate(['/home']);
         },
         error => {
           this.loading = false;
@@ -72,20 +73,29 @@ export class ProfileComponent implements OnInit {
         });
   }
 
-  changeAvatar() {
-      this.uploadService.uploadFile('http://127.0.0.1:8000/user/1', this.avatarForm.value)
+  addAvatar(event) {
+    let target = event.target || event.srcElement;
+    this.files = target.files;
+    if (this.files) {
+      let files: File = this.files;
+      const formData = new FormData();
+        formData.append('avatar', files);
+    }
   }
 
-  addPhone() {
-    (<FormArray>this.editProfileForm.controls["phones"]).push(new FormControl("+7", Validators.required));
-  }
+  getFormData() {
+      const formData = new FormData();
+      formData.append('email', this.editProfileForm.value.email);
+      formData.append('password', this.editProfileForm.value.password);
+      formData.append('password', this.editProfileForm.value.password);
+      formData.append('first_name', this.editProfileForm.value.first_name);
+      formData.append('middle_name', this.editProfileForm.value.middle_name);
+      formData.append('last_name', this.editProfileForm.value.last_name);
+      formData.append('phone', this.editProfileForm.value.phone);
+      return formData;
+    };
 
   getUser(id: number) {
     return this.userService.getById(id).subscribe((data: User) => this.currentUser = data)
   }
-
-  deleteUser(id: number) {
-    this.userService.delete(id)
-  }
-
 }

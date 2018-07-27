@@ -4,7 +4,7 @@ from rest_framework import serializers
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
     password = serializers.CharField(write_only=True, required=True)
-    avatar = serializers.ImageField(allow_empty_file=True, required=False)
+    avatar = serializers.ImageField(allow_null=True, required=False)
     
     class Meta:
         model = User
