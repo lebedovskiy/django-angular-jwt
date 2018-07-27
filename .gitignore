@@ -1,0 +1,32 @@
+.DS_Store
+**/node_modules/
+venv/
+db.sqlite3
+dist/
+test_task/__pycache__/
+api/__pycache__/
+api/migrations
+
+npm-debug.log*
+
+# Editor directories and files
+.idea
+src/components/1.html
+*.[pyc]
+
+# compiled output
+/dist
+/tmp
+/out-tsc
+
+
+# misc
+/.sass-cache
+/connect.lock
+/coverage
+/libpeerconnection.log
+npm-debug.log
+yarn-error.log
+testem.log
+/typings
+Thumbs.db
