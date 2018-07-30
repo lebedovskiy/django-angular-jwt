@@ -1,6 +1,4 @@
 export interface User {
-  // user id для получения данных из JWT.
-    user_id: number;
     id: number;
     email: string;
     password: string;

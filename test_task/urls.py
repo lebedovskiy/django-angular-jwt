@@ -27,7 +27,7 @@ urlpatterns = [
     path('api-token-verify/', verify_jwt_token),
     path('', include('api.urls'))
 ]
-
+# Раздача медиа с сервера джанго, только при разработке
 if settings.DEBUG:
     from django.conf.urls.static import static
     urlpatterns += static(

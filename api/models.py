@@ -15,12 +15,15 @@ from django.utils.translation import ugettext_lazy as _
 
 def user_directory_path(instance, filename):
     """
-    Получаем путь загрузки дл ускорени поиска
+    Получаем путь загрузки для ускорени поиска изображений
     """
     return 'user_{0}/{1}'.format(instance.pk, filename)
 
 
 class User(AbstractBaseUser, PermissionsMixin):
+    """
+    Создаем пользователя для аутентификации по  e-mail
+    """
     email = models.EmailField(_('email address'), unique=True)
     first_name = models.CharField(_('first name'), max_length=30, blank=True)
     last_name = models.CharField(_('last name'), max_length=30, blank=True)
@@ -41,21 +44,20 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     def get_full_name(self):
         """
-        Returns the first_name plus the last_name and middle_name, with a space in between.
+        Возвращает ФИО пользователя (нужно для работы с пользователями в админке)
         """
         full_name = '%s %s %s' % (self.first_name, self.middle_name, self.last_name)
         return full_name.strip()
 
     def get_short_name(self):
         """
-        Returns the short name for the user.
+        Возвращает имя пользователя (нужно для работы с пользователями в админке)
         """
         return self.first_name
     
     def _generate_jwt_token(self):
         """
-        Generates a JSON Web Token that stores this user's ID and has an expiry
-        date set to 60 days into the future.
+        Создаем токен
         """
         dt = datetime.now() + timedelta(days=60)
 
@@ -68,6 +70,9 @@ class User(AbstractBaseUser, PermissionsMixin):
 
     @property
     def is_staff(self):
+        """
+        Проверяет флаг персонала (нужно для работы суперпользователем в админке)
+        """
         return self.is_superuser
     
     @property

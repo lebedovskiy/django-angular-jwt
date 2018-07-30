@@ -1,10 +1,15 @@
 import {Component, OnInit} from '@angular/core';
+
 import {User} from '../user';
+import {Token} from "../token";
+
 import {UserService} from '../user.service';
+
 import {Router} from "@angular/router";
 import {FormBuilder, FormGroup, Validators} from "@angular/forms";
 
 import {JwtHelperService} from '@auth0/angular-jwt';
+
 
 
 @Component({
@@ -14,11 +19,12 @@ import {JwtHelperService} from '@auth0/angular-jwt';
 })
 export class ProfileComponent implements OnInit {
 
-  currentUser: User;
+  token: Token;
+  user: User;
   editProfileForm: FormGroup;
   loading = false;
   submitted = false;
-  files: File;
+  files: FileList;
 
   helper = new JwtHelperService();
 
@@ -26,24 +32,29 @@ export class ProfileComponent implements OnInit {
               private formBuilder: FormBuilder,
               private router: Router,
   ) {
-    this.currentUser = this.helper.decodeToken(localStorage.getItem('currentUser'));
+    // декодим токен чтобы получить данные юзера
+    this.token = this.helper.decodeToken(localStorage.getItem('token'));
+    // получаем пэйлоад респонса сервера
+    this.user = JSON.parse(localStorage.getItem('user'));
   }
 
   ngOnInit() {
-    this.getUser(this.currentUser.user_id);
-    console.log(this.currentUser.user_id);
+    console.log(this.token);
+    // получаем пользователя по его ID из токена
+    this.getUser(this.token.user_id);
+    // строим форму
     this.editProfileForm = this.formBuilder.group({
-      email: [this.currentUser.email,
+      email: [this.user.email,
         Validators.pattern("[a-zA-Z_0-9]+@[a-zA-Z_]+?\.[a-zA-Z]{2,3}")
       ],
-      password: [this.currentUser.password, [
+      password: [this.user.password, [
         Validators.required,
         Validators.minLength(6)
       ]],
-      first_name: [this.currentUser.first_name],
-      middle_name: [this.currentUser.middle_name],
-      last_name: [this.currentUser.last_name],
-      phone: null,
+      first_name: [this.user.first_name],
+      middle_name: [this.user.middle_name],
+      last_name: [this.user.last_name],
+      phone: [this.user.phone],
       avatar: [],
     });
   }
@@ -51,18 +62,10 @@ export class ProfileComponent implements OnInit {
   onSubmit() {
     this.submitted = true;
     this.loading = true;
-    console.log(this.currentUser);
     let final_data;
-    if (this.files) {
-      let file: File = this.files;
-      const formData = new FormData();
-      formData.append('avatar', file);
-      final_data = this.getFormData()
-    }
-    else {
-      final_data = this.getFormData();
-    }
-    this.userService.update(this.currentUser.id, final_data)
+    // получаем данные для отправки на сервер
+    final_data = this.getFormData();
+    this.userService.update(this.token.user_id, final_data)
       .subscribe(
         final_data => {
           this.router.navigate(['/home']);
@@ -71,31 +74,41 @@ export class ProfileComponent implements OnInit {
           this.loading = false;
           console.log(error)
         });
+    // перезагружаем страницу чтобы получить новые данные юзера
+    location.reload()
   }
 
   addAvatar(event) {
     let target = event.target || event.srcElement;
     this.files = target.files;
     if (this.files) {
-      let files: File = this.files;
+      let files: FileList = this.files;
       const formData = new FormData();
-        formData.append('avatar', files);
+      formData.append('avatar', files[0]);
     }
   }
 
   getFormData() {
-      const formData = new FormData();
-      formData.append('email', this.editProfileForm.value.email);
-      formData.append('password', this.editProfileForm.value.password);
-      formData.append('password', this.editProfileForm.value.password);
-      formData.append('first_name', this.editProfileForm.value.first_name);
-      formData.append('middle_name', this.editProfileForm.value.middle_name);
-      formData.append('last_name', this.editProfileForm.value.last_name);
-      formData.append('phone', this.editProfileForm.value.phone);
-      return formData;
-    };
+    // получаем данные из формы в FormData
+    const formData = new FormData();
+    if (this.files) {
+      // проверяем изменение аватара
+      let files: FileList = this.files;
+      formData.append('avatar', files[0]);
+    }
+    // добавляем остальные данные из формы
+    formData.append('email', this.editProfileForm.value.email);
+    formData.append('password', this.editProfileForm.value.password);
+    formData.append('password', this.editProfileForm.value.password);
+    formData.append('first_name', this.editProfileForm.value.first_name);
+    formData.append('middle_name', this.editProfileForm.value.middle_name);
+    formData.append('last_name', this.editProfileForm.value.last_name);
+    formData.append('phone', this.editProfileForm.value.phone);
+    return formData;
+  };
 
   getUser(id: number) {
-    return this.userService.getById(id).subscribe((data: User) => this.currentUser = data)
+    // получаем юзера по ID, записываем в this.user чтобы обращаться из HTML.
+    return this.userService.getById(id).subscribe((data: User) => this.user = data)
   }
 }

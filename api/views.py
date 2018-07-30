@@ -1,21 +1,21 @@
-from django.contrib.auth import authenticate
-from test_task.settings import SECRET_KEY
-
-from rest_framework.views import APIView
-from rest_framework import status
-from rest_framework.generics import RetrieveUpdateDestroyAPIView, ListCreateAPIView
-from rest_framework.response import Response
-from rest_framework.permissions import AllowAny
-from rest_framework_jwt.settings import api_settings
-from rest_framework.parsers import MultiPartParser, JSONParser
-
 import jwt
 
-from .serializers import UserSerializer
+from django.contrib.auth import authenticate
+from rest_framework import status
+
+from rest_framework.generics import RetrieveUpdateDestroyAPIView
+from rest_framework.parsers import MultiPartParser, JSONParser
+from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.response import Response
+from rest_framework.views import APIView
+from rest_framework_jwt.settings import api_settings
+
+from test_task.settings import SECRET_KEY
+
 from .models import User
-from.permissions import AllowOptionsAuthentication
+from .serializers import UserSerializer
 
-
+# указываем хендлеры для создания токена
 jwt_payload_handler = api_settings.JWT_PAYLOAD_HANDLER
 jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
 
@@ -23,7 +23,7 @@ jwt_encode_handler = api_settings.JWT_ENCODE_HANDLER
 class CreateUserView(APIView):
     serializer_class = UserSerializer
     permission_classes = (AllowAny,)
-
+    
     def post(self, request):
         serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
@@ -33,6 +33,10 @@ class CreateUserView(APIView):
 
 
 class LoginUserView(APIView):
+    """
+    Аутентификация пользователя
+
+    """
     permission_classes = (AllowAny,)
     
     def post(self, request):
@@ -40,7 +44,7 @@ class LoginUserView(APIView):
         password = request.data.get('password')
         user = authenticate(email=email, password=password)
         if user:
-            payload = jwt_payload_handler(user)
+            payload = jwt_payload_handler()
             token = {
                 'token': jwt.encode(payload, SECRET_KEY),
                 'status': 'success',
@@ -54,17 +58,12 @@ class LoginUserView(APIView):
 
 
 class UserDetail(RetrieveUpdateDestroyAPIView):
+    """
+    Контроллер пользователя, можно обратиться только после входа
+    """
     permission_classes = [
-                          AllowAny,
-                          ]
+        IsAuthenticated,
+    ]
     queryset = User.objects.all()
     serializer_class = UserSerializer
-    parser_classes = (MultiPartParser, JSONParser)
-
-
-class UserList(ListCreateAPIView):
-    permission_classes = [
-                          AllowAny,
-                          ]
-    queryset = User.objects.all()
-    serializer_class = UserSerializer
+    parser_classes = [MultiPartParser, JSONParser]

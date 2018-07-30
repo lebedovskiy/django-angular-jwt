@@ -3,6 +3,9 @@ from rest_framework import serializers
 
 
 class UserSerializer(serializers.HyperlinkedModelSerializer):
+    """
+    Для подтверждения изменений нужно передать пароль
+    """
     password = serializers.CharField(write_only=True, required=True)
     avatar = serializers.ImageField(allow_null=True, required=False)
     

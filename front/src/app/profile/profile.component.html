@@ -1,8 +1,8 @@
-<h1>Hi {{ currentUser.first_name }}!</h1>
+<h1>Hi {{ user.first_name }}!</h1>
 <form [formGroup]="editProfileForm" (ngSubmit)="onSubmit()">
   <div class="form-group">
     <label for="email">Email</label>
-    <input type="text" value="{{ currentUser.email }}" formControlName="email" autocomplete="email"
+    <input type="text"  formControlName="email" autocomplete="email"
            class="form-control"/>
   </div>
   <div class="form-group">
@@ -12,22 +12,22 @@
   </div>
   <div class="form-group">
     <label for="first_name">First name</label>
-    <input type="text" value="{{ currentUser.first_name }}" formControlName="first_name" autocomplete="given-name"
+    <input type="text" formControlName="first_name" autocomplete="given-name"
            class="form-control"/>
   </div>
   <div class="form-group">
     <label for="middle_name">Middle Name</label>
-    <input type="text" value="{{ currentUser.middle_name }}" formControlName="middle_name"
+    <input type="text" formControlName="middle_name"
            autocomplete='additional-name' class="form-control"/>
   </div>
   <div class="form-group">
     <label for="last_name">Last Name</label>
-    <input type="text" value="{{ currentUser.last_name }}" formControlName="last_name" autocomplete='family-name'
+    <input type="text" formControlName="last_name" autocomplete='family-name'
            class="form-control"/>
   </div>
   <div class="form-group">
     <label for="phone">Телефон</label>
-    <input type="text" value="{{currentUser.phone}}" formControlName="phone" autocomplete="tel"
+    <input type="text" formControlName="phone" autocomplete="tel"
            class="form-control"/>
   </div>
   <div class="form-group">
@@ -39,11 +39,6 @@
     <button [disabled]="loading" class="btn btn-primary">Update</button>
   </div>
 </form>
-<div>Name: {{ currentUser.first_name }}</div>
-<div>Middle Name: {{ currentUser.middle_name }}</div>
-<div>Last Name: {{ currentUser.last_name }}</div>
-<div>Id: {{ currentUser.id }}</div>
-<div>Phone: {{ currentUser.phone }}</div>
-<div>Avatar: <img src="{{ currentUser.avatar }}"></div>
+<div>Avatar: <img src="{{ user.avatar }}"></div>
 <div></div>
 <p><a [routerLink]="['/login']">Logout</a></p>
