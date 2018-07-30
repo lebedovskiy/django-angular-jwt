@@ -12,6 +12,8 @@ import {routing} from './app.routing';
 import {AuthGuard} from './auth.guard';
 import {AuthService} from './auth.service';
 import {UserService} from './user.service';
+import {MatButtonModule, MatInputModule, MatFormFieldModule} from '@angular/material';
+import {BrowserAnimationsModule} from "@angular/platform-browser/animations";
 
 @NgModule({
   declarations: [
@@ -22,8 +24,12 @@ import {UserService} from './user.service';
   ],
   imports: [
     BrowserModule,
+    BrowserAnimationsModule,
     ReactiveFormsModule,
     HttpClientModule,
+    MatButtonModule,
+    MatFormFieldModule,
+    MatInputModule,
     routing
   ],
   providers: [

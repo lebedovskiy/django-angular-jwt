@@ -34,7 +34,7 @@ export class ProfileComponent implements OnInit {
   ) {
     // декодим токен чтобы получить данные юзера
     this.token = this.helper.decodeToken(localStorage.getItem('token'));
-    // получаем пэйлоад респонса сервера
+    // парсим пэйлоад респонса сервера
     this.user = JSON.parse(localStorage.getItem('user'));
   }
 
